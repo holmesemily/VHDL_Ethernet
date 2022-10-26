@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2018.2 (64-bit)
+# SW Build 2258646 on Thu Jun 14 20:02:38 MDT 2018
+# IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
+# Start of session at: Wed Oct 26 12:12:29 2022
+# Process ID: 16982
+# Current directory: /home/holmes/Bureau/VHDL/VHDL_Ethernet/ethernet/ethernet.runs/synth_1
+# Command line: vivado -log ethernet_transmitter.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source ethernet_transmitter.tcl
+# Log file: /home/holmes/Bureau/VHDL/VHDL_Ethernet/ethernet/ethernet.runs/synth_1/ethernet_transmitter.vds
+# Journal file: /home/holmes/Bureau/VHDL/VHDL_Ethernet/ethernet/ethernet.runs/synth_1/vivado.jou
+#-----------------------------------------------------------
+source ethernet_transmitter.tcl -notrace
