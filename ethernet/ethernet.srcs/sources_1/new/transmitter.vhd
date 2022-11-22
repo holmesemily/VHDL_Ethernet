@@ -1,4 +1,4 @@
-----------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 -- Company: 
 -- Engineer: 
 -- 
@@ -29,11 +29,11 @@ entity ethernet_transmitter is
     Generic (
         SFD : std_logic_vector (7 downto 0) := "10101011";
         EFD : std_logic_vector (7 downto 0) := "01010100";
-        NOADDRI : std_logic_vector (47 downto 0) := "110011001100110011001100110011001100110011001100");
+        NOADDRI : std_logic_vector (47 downto 0) := X"efefefefefef");
 
     Port (CLK10I, RESETN : in std_logic;
 
-          TABORTP, TAVAILP, TFINISHP, TLASTP : in std_logic;
+          TSOCOLP, TABORTP, TAVAILP, TFINISHP, TLASTP : in std_logic;
           TDONEP, TREADDP, TRNSMTP, TSTARTP : out std_logic;
 
           TDATAI : in std_logic_vector (7 downto 0);
@@ -42,29 +42,137 @@ end ethernet_transmitter;
 
 architecture Behavioral of ethernet_transmitter is
     signal CLK10I_8 : std_logic_vector (2 downto 0) := (others => '0');  
-    signal CURRENT_DATA : std_logic_vector (7 downto 0);
+    signal Compteur_6 : std_logic_vector (2 downto 0) := (others => '0');  
+    signal Compteur_4 : std_logic_vector (1 downto 0) := (others => '0');  
+
+    signal Trans_Required : std_logic := '0';
+    signal Abort_Required : std_logic := '0';
+    signal SFD_Done : std_logic := '0';
+    signal Dest_Done : std_logic := '0';
+    signal Source_Done : std_logic := '0';
+    signal Trans_Done : std_logic := '0';
 begin
     process (CLK10I) 
         begin
             if (rising_edge(CLK10I)) then 
-                if (RESETN = '0') then
-                    -- routine de reset
-                    null;
-                else 
-                    CLK10I_8 <= CLK10I_8 + 1;
-                    if (TABORTP = '1') then
-                        -- envoyer 32 bits de padding sur TDATAO, envoyer TDONEP, baisser TRNSMTP
+                TREADDP <= '0';
+                TDONEP <= '0';
+                TSTARTP <= '0';
+                
+                if (RESETN = '0') then              -- Réinitialisation totale
+                    CLK10I_8 <= (others => '0');
+                    Compteur_6 <= (others => '0');
+                    Compteur_4 <= (others => '0');
                     
-                    elsif (TAVAILP = '1') then
-                      --  CLK10I_8 <= "100";    -- sync à l'octet PROBLEME LOGIQUE
-                        if (CLK10I_8(2) = '1') then
-                            CURRENT_DATA <= SFD;
-                        elsif (CLK10I_8(2) = '0') then
-                            CURRENT_DATA <= (others => '0'); -- for testing purposes
+                    TDATAO <= (others => '0');
+                    TRNSMTP <= '0';
+                    
+                    Trans_required <= '0';
+                    Abort_required <= '0';
+                    SFD_Done <= '0';
+                    Dest_Done <= '0';
+                    Source_Done <= '0';
+                    Trans_Done <= '0';
+                else 
+                    if (Trans_Required = '1' or TAVAILP = '1') then 
+                        if (Trans_Required = '0') then 
+                            Trans_Required <= '1';
+                        end if; 
+                        
+                        if (Abort_Required = '1' or TABORTP = '1' or TSOCOLP = '1') then
+                            if (Abort_Required = '0') then 
+                                Abort_Required <= '1';
+                            end if;
+                            
+                            if (CLK10I_8 = "000") then          -- à l'octet
+                                if (Compteur_4 <= "11") then 
+                                    TDATAO <= "10101010";
+                                    if (Compteur_4 < "11") then
+                                        Compteur_4 <= Compteur_4 + 1;
+                                    else
+                                        Compteur_4 <= "00";
+                                        TDONEP <= '1';
+                                        TRNSMTP <= '0';
+                                        SFD_Done <= '0';                              
+                                        Dest_Done <= '0';                              
+                                        Source_Done <= '0';   
+                                        Trans_Done <= '0';
+                                        Trans_Required <= '0';    
+                                        Abort_Required <= '0';
+                                    end if;
+                                end if;
+                                CLK10I_8 <= CLK10I_8 + 1;
+                                
+                            else
+                                if (CLK10I_8 = "111") then
+                                    CLK10I_8 <= "000";
+                                else
+                                    CLK10I_8 <= CLK10I_8 + 1;
+                                end if;
+                            end if;
+                        
+                    
+                        else
+                            if (Trans_Done = '1') then 
+                              TDONEP <= '1';           
+                              TRNSMTP <= '0';          
+                              SFD_Done <= '0';                              
+                              Dest_Done <= '0';                              
+                              Source_Done <= '0';   
+                              Trans_Done <= '0';  
+                              Trans_Required  <= '0'; 
+                            else
+                                TRNSMTP <= '1';
+                                if (CLK10I_8 = "000") then 
+                                    if (SFD_Done = '0') then
+                                        TSTARTP <= '1';
+                                        TDATAO <= SFD;
+                                        SFD_Done <= '1';
+                                    
+                                    elsif (Dest_Done = '0') then
+                                        TDATAO <= TDATAI; 
+                                        TREADDP <= '1';
+                                        if (Compteur_6 = "101") then
+                                            Compteur_6 <= "000"; 
+                                            Dest_Done <= '1';
+                                        else 
+                                            Compteur_6 <= Compteur_6 + 1; 
+                                        end if;
+                                        
+                                    elsif (Source_Done = '0') then
+                                    --  NOADDRI(8*Compteur_6 + 7 downto 8*Compteur_6)
+                                        TDATAO <= NOADDRI(to_integer(shift_left(unsigned(Compteur_6), 3)) + 7 downto to_integer(shift_left(unsigned(Compteur_6), 3)));                                
+                                        if (Compteur_6 = "101") then 
+                                            Compteur_6 <= "000";
+                                            Source_Done <= '1';
+                                        else
+                                            Compteur_6 <= Compteur_6 + 1;
+                                        end if;
+                                                                    
+                                    else -- Envoi de DATA jusqu'a TFINISHP
+                                        if (TFINISHP = '0') then 
+                                            TDATAO <= TDATAI;
+                                            TREADDP <= '1';
+                                        else
+                                            TDATAO <= EFD;
+                                            Trans_Done <= '1';
+                                        end if;
+                                    end if;     
+                                    CLK10I_8 <= CLK10I_8 + 1;
+                                else
+                                    if (CLK10I_8 = "111") then
+                                        CLK10I_8 <= "000";
+                                    else
+                                        CLK10I_8 <= CLK10I_8 + 1;
+                                    end if;
+                                end if;
+                                
+                                
+                                
+                            end if;
                         end if;
                     end if;
                 end if;
             end if;
     end process; 
-    TDATAO <= CURRENT_DATA;
 end Behavioral;

@@ -1,0 +1,7 @@
+Running: xsim.dir/ethernet_transmitter_behav/xsimk -simmode gui -wdb ethernet_transmitter_behav.wdb -simrunnum 0 -socket 44815
+Design successfully loaded
+Design Loading Memory Usage: 32664 KB (Peak: 32724 KB)
+Design Loading CPU Usage: 0 ms
+Simulation completed
+Simulation Memory Usage: 114400 KB (Peak: 179936 KB)
+Simulation CPU Usage: 160 ms
