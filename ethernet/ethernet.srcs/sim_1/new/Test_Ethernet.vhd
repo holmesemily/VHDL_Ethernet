@@ -95,10 +95,12 @@ stim_proc: process
 begin
 -- insert stimulus here
 RESETN <= '1'; --, '0' after 1000 ns, '1' after 1200 ns;
-TDATAI <= "00001000", "00000100" after 1200 ns; 
-TAVAILP <= '0', '1' after 50 ns, '0' after 1400 ns;
-TFINISHP <= '0', '1' after 1700 ns, '0' after 1985 ns, '1' after 2600 ns;
-TABORTP <= '0', '0' after 1400 ns, '0' after 1500 ns;
+TDATAI <= "00000000", X"ef" after 100 ns, X"cd" after 180 ns, X"ab" after 260 ns, X"ef" after 340 ns, X"cd" after 420 ns, X"ab" after 500 ns; --  "00000100" after 1090 ns; 
+TAVAILP <= '0', '1' after 50 ns, '0' after 100 ns;
+TFINISHP <= '0', '1' after 1300 ns, '0' after 1400ns;
+
+-- to fail attempt
+TABORTP <= '0', '1' after 800 ns, '0' after 900 ns;
 
 wait;
 end process;

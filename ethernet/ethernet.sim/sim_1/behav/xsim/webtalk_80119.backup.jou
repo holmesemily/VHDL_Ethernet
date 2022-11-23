@@ -2,8 +2,8 @@
 # Webtalk v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:02:38 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Tue Nov 22 09:34:10 2022
-# Process ID: 3535
+# Start of session at: Wed Nov 23 11:32:08 2022
+# Process ID: 80119
 # Current directory: /home/holmes/Bureau/VHDL/VHDL_Ethernet/ethernet/ethernet.sim/sim_1/behav/xsim
 # Command line: wbtcv -mode batch -source /home/holmes/Bureau/VHDL/VHDL_Ethernet/ethernet/ethernet.sim/sim_1/behav/xsim/xsim.dir/Test_Ethernet_behav/webtalk/xsim_webtalk.tcl -notrace
 # Log file: /home/holmes/Bureau/VHDL/VHDL_Ethernet/ethernet/ethernet.sim/sim_1/behav/xsim/webtalk.log

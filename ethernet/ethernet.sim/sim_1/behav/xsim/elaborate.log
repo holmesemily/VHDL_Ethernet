@@ -1,6 +1,6 @@
 Vivado Simulator 2018.2
 Copyright 1986-1999, 2001-2018 Xilinx, Inc. All Rights Reserved.
-Running: /usr/local/insa/Xilinx.VIVADO/Vivado/2018.2/bin/unwrapped/lnx64.o/xelab -wto 0aa4fba5113d42ff9fb1f1adba077481 --incr --debug typical --relax --mt 8 -L xil_defaultlib -L secureip --snapshot test_receiver_behav xil_defaultlib.test_receiver -log elaborate.log 
+Running: /usr/local/insa/Xilinx.VIVADO/Vivado/2018.2/bin/unwrapped/lnx64.o/xelab -wto 0aa4fba5113d42ff9fb1f1adba077481 --incr --debug typical --relax --mt 8 -L xil_defaultlib -L secureip --snapshot ethernet_module_sim_behav xil_defaultlib.ethernet_module_sim -log elaborate.log 
 Using 8 slave threads.
 Starting static elaboration
 Completed static elaboration
@@ -13,6 +13,9 @@ Compiling package ieee.std_logic_1164
 Compiling package ieee.std_logic_arith
 Compiling package ieee.std_logic_unsigned
 Compiling package ieee.numeric_std
+Compiling architecture behavioral of entity xil_defaultlib.ethernet_transmitter [ethernet_transmitter_default]
 Compiling architecture behavioral of entity xil_defaultlib.ethernet_receiver [ethernet_receiver_default]
-Compiling architecture behavioral of entity xil_defaultlib.test_receiver
-Built simulation snapshot test_receiver_behav
+Compiling architecture behavioral of entity xil_defaultlib.ethernet_collision [ethernet_collision_default]
+Compiling architecture struct of entity xil_defaultlib.ethernet_module [ethernet_module_default]
+Compiling architecture behavioral of entity xil_defaultlib.ethernet_module_sim
+Built simulation snapshot ethernet_module_sim_behav

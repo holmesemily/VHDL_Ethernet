@@ -37,12 +37,12 @@ entity ethernet_receiver is
 Generic (
         SFD : std_logic_vector (7 downto 0) := "10101011";
         EFD : std_logic_vector (7 downto 0) := "01010100";
-        NOADDRI : std_logic_vector (47 downto 0) := X"efefefefefef");
+        NOADDRI : std_logic_vector (47 downto 0) := X"abcdefabcdef");
 
     Port (CLK10I, RESETN : in std_logic;
 
           RENABP: in std_logic;
-          RCLEANP, RCVNGP, RDONEP, RSMATIP, RSTARTIP, RBYTEP : out std_logic;
+          RCLEANP, RCVNGP, RDONEP, RSMATIP, RSTARTP, RBYTEP : out std_logic;
 
           RDATAI : in std_logic_vector (7 downto 0);
           RDATAO : out std_logic_vector (7 downto 0));
@@ -50,7 +50,8 @@ end ethernet_receiver;
 
 architecture Behavioral of ethernet_receiver is
     signal CLK10I_8 : std_logic_vector (2 downto 0) := (others => '0');  
-    signal Compteur_6 : std_logic_vector (2 downto 0) := (others => '0');  
+    signal Compteur_6 : std_logic_vector (2 downto 0) := (others => '0');
+    signal Index : std_logic_vector (7 downto 0) := "00000000";    
     signal Last_Data_Received : std_logic_vector (7 downto 0) := (others => '0');
     
     signal SFD_Received : std_logic := '0';
@@ -62,7 +63,7 @@ begin
         begin
         if (rising_edge(CLK10I)) then
             RBYTEP <= '0';
-            RSTARTIP <= '0';
+            RSTARTP <= '0';
             RCLEANP <= '0';
             RDONEP <= '0';
     
@@ -75,6 +76,9 @@ begin
                 SFD_Received <= '0';
                 ADDR_Dest_Received <= '0';
                 ADDR_Source_Received <= '0';
+                Index <= (others => '0');
+                CLK10I_8 <= (others => '0');
+                Compteur_6 <= (others => '0');
                 
             else
                 if (RENABP = '1') then
@@ -83,29 +87,30 @@ begin
                     
                         if (SFD_Received = '0') then
                             if (RDATAI = SFD) then
-                                RSTARTIP <= '1';
+                                RSTARTP <= '1';
                                 RCVNGP <= '1';
                                 SFD_Received <= '1';
                             end if;  
                                    
                         elsif (ADDR_Dest_Received = '0') then 
-                            if (Compteur_6 <= "101") then 
-                                -- if (RDATAI = NOADDRI(8*Compteur_6 + 7 downto 8*Compteur_6)
-                                if (RDATAI = NOADDRI(to_integer(shift_left(unsigned(Compteur_6), 3)) + 7 downto to_integer(shift_left(unsigned(Compteur_6), 3)))) then
-                                    RBYTEP <= '1';
-                                else -- Mauvaise addr
-                                    RCLEANP <= '1';
-                                    RCVNGP <= '0';
-                                    SFD_Received <= '0';
-                                end if;
+                            -- if (RDATAI = NOADDRI(8*Index + 7 downto 8*Index)
+                            if (RDATAI = NOADDRI(to_integer(shift_left(unsigned(Index), 3)) + 7 downto to_integer(shift_left(unsigned(Index), 3)))) then
+                                RBYTEP <= '1';
+                                Index <= Index + 1;
+                            else -- Mauvaise addr
+                                RCLEANP <= '1';
+                                RCVNGP <= '0';
+                                SFD_Received <= '0';
+                                Index <= (others => '0');
+                            end if;
                                 
-                                if (Compteur_6 = "101") then 
-                                    Compteur_6 <= "000";
-                                    RSMATIP <= '1';
-                                    ADDR_Dest_Received <= '1';
-                                else
-                                    Compteur_6 <= Compteur_6 + 1;
-                                end if;
+                            if (Compteur_6 = "101") then 
+                                Compteur_6 <= "000";
+                                Index <= (others => '0');
+                                RSMATIP <= '1';
+                                ADDR_Dest_Received <= '1';
+                            else
+                                Compteur_6 <= Compteur_6 + 1;
                             end if;
                             
                         elsif (ADDR_Source_Received = '0') then
@@ -141,7 +146,6 @@ begin
                         CLK10I_8 <= CLK10I_8 + 1;
                     end if;
                 else
-                -- RENABP = 0
                     if (Last_Data_Received /= EFD and SFD_Received = '1') then
                         -- Last frame incomplete
                         RCLEANP <= '1';
@@ -152,6 +156,9 @@ begin
                         SFD_Received <= '0';
                         ADDR_Dest_Received <= '0';
                         ADDR_Source_Received <= '0';
+                        Index <= (others => '0');
+                        CLK10I_8 <= (others => '0');
+                        Compteur_6 <= (others => '0');
                     end if;
                 end if;        
             end if;

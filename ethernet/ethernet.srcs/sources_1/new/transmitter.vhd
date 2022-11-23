@@ -29,12 +29,12 @@ entity ethernet_transmitter is
     Generic (
         SFD : std_logic_vector (7 downto 0) := "10101011";
         EFD : std_logic_vector (7 downto 0) := "01010100";
-        NOADDRI : std_logic_vector (47 downto 0) := X"efefefefefef");
+        NOADDRI : std_logic_vector (47 downto 0) := X"0a0b0c0a0b0c");
 
     Port (CLK10I, RESETN : in std_logic;
 
-          TSOCOLP, TABORTP, TAVAILP, TFINISHP, TLASTP : in std_logic;
-          TDONEP, TREADDP, TRNSMTP, TSTARTP : out std_logic;
+          TABORTP, TAVAILP, TFINISHP, TLASTP, TSOCOLP, TSMCOLP, TSECOLP : in std_logic;
+          TDONEP, TREADDP, TRNSMTP, TSTARTP, COLLISION_HAPPENING : out std_logic;
 
           TDATAI : in std_logic_vector (7 downto 0);
           TDATAO : out std_logic_vector (7 downto 0));
@@ -44,6 +44,7 @@ architecture Behavioral of ethernet_transmitter is
     signal CLK10I_8 : std_logic_vector (2 downto 0) := (others => '0');  
     signal Compteur_6 : std_logic_vector (2 downto 0) := (others => '0');  
     signal Compteur_4 : std_logic_vector (1 downto 0) := (others => '0');  
+    signal Index : std_logic_vector (7 downto 0) := (others => '0');
 
     signal Trans_Required : std_logic := '0';
     signal Abort_Required : std_logic := '0';
@@ -85,23 +86,24 @@ begin
                             end if;
                             
                             if (CLK10I_8 = "000") then          -- à l'octet
-                                if (Compteur_4 <= "11") then 
-                                    TDATAO <= "10101010";
-                                    if (Compteur_4 < "11") then
-                                        Compteur_4 <= Compteur_4 + 1;
-                                    else
-                                        Compteur_4 <= "00";
-                                        TDONEP <= '1';
-                                        TRNSMTP <= '0';
-                                        SFD_Done <= '0';                              
-                                        Dest_Done <= '0';                              
-                                        Source_Done <= '0';   
-                                        Trans_Done <= '0';
-                                        Trans_Required <= '0';    
-                                        Abort_Required <= '0';
-                                    end if;
+                                COLLISION_HAPPENING <= '1';
+                                TDATAO <= "10101010";
+                                TRNSMTP <= '0';
+                                if (Compteur_4 < "11") then
+                                    Compteur_4 <= Compteur_4 + 1;
+                                else
+                                    Compteur_4 <= "00";
+                                    COLLISION_HAPPENING <= '0';
+                                    TDONEP <= '1';
+                                    SFD_Done <= '0';                              
+                                    Dest_Done <= '0';                              
+                                    Source_Done <= '0';   
+                                    Trans_Done <= '0';
+                                    Trans_Required <= '0';    
+                                    Abort_Required <= '0';
                                 end if;
-                                CLK10I_8 <= CLK10I_8 + 1;
+                            
+                            CLK10I_8 <= CLK10I_8 + 1;
                                 
                             else
                                 if (CLK10I_8 = "111") then
@@ -140,13 +142,15 @@ begin
                                         end if;
                                         
                                     elsif (Source_Done = '0') then
-                                    --  NOADDRI(8*Compteur_6 + 7 downto 8*Compteur_6)
-                                        TDATAO <= NOADDRI(to_integer(shift_left(unsigned(Compteur_6), 3)) + 7 downto to_integer(shift_left(unsigned(Compteur_6), 3)));                                
+                                    --  NOADDRI(8*Index + 7 downto 8*Index)
+                                        TDATAO <= NOADDRI(to_integer(shift_left(unsigned(Index), 3)) + 7 downto to_integer(shift_left(unsigned(Index), 3)));                                
                                         if (Compteur_6 = "101") then 
                                             Compteur_6 <= "000";
+                                            Index <= (others => '0');
                                             Source_Done <= '1';
                                         else
                                             Compteur_6 <= Compteur_6 + 1;
+                                            Index <= Index + 1;
                                         end if;
                                                                     
                                     else -- Envoi de DATA jusqu'a TFINISHP

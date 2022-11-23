@@ -36,7 +36,7 @@ use ieee.numeric_std.all;
 entity ethernet_collision is
     Port (CLK10I, RESETN : in std_logic;
     
-          TRNSMTP, RCVNGP, TDONEP, TABORTP: in std_logic;
+          TRNSMTP, RCVNGP, TABORTP, COLLISION_HAPPENING: in std_logic; 
           TSOCOLP, TSMCOLP, TSECOLP : out std_logic);
 end ethernet_collision;
 
@@ -50,26 +50,28 @@ begin
                 TSMCOLP <= '0';
                 TSECOLP <= '0';
                 if (RESETN = '0') then
-                    Collision_Nmb <= (others => '0');
-                    TSECOLP <= '0';
+                    --Collision_Nmb <= (others => '0');
+                    --TSECOLP <= '0';
                     TSOCOLP <= '0';
-                    TSMCOLP <= '0';
+                    --TSMCOLP <= '0';
                 elsif (TRNSMTP = '1' and RCVNGP = '1') then
                     TSOCOLP <= '1';
-                    Collision_Nmb <= Collision_Nmb + 1;
-                    if (Collision_Nmb >= "0010") then  -- Multiple failures
-                         TSOCOLP <= '0';
-                         TSMCOLP <= '1';
-                    elsif (Collision_Nmb = "1000") then -- Too many failures, cannot send
-                        TSECOLP <= '1';
-                        TSOCOLP <= '0';
-                        TSMCOLP <= '0';
-                        Collision_Nmb <= (others => '0');
-                    end if;
+                    --if (COLLISION_HAPPENING = '0') then
+                    --   Collision_Nmb <= Collision_Nmb + 1;
+                    --end if;
+                    --if (Collision_Nmb >= "0010") then  -- Multiple failures
+                      --   TSOCOLP <= '0';
+                        -- TSMCOLP <= '1';
+                  --  elsif (Collision_Nmb = "1000") then -- Too many failures, cannot send
+                    --    TSECOLP <= '1';
+                      --  TSOCOLP <= '0';
+                        --TSMCOLP <= '0';
+                       -- Collision_Nmb <= (others => '0');
+                    --end if;
                 end if;
-                if (TDONEP = '1') then
-                    Collision_Nmb <= (others => '0');
-                end if;    
+               -- if (TDONEP = '1') then
+                --    Collision_Nmb <= (others => '0');
+               -- end if;    
                 if (TABORTP = '1') then
                    TSOCOLP <= '1'; 
                    TSMCOLP <= '1';

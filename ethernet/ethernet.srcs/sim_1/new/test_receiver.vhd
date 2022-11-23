@@ -41,7 +41,7 @@ COMPONENT ethernet_receiver
 PORT( CLK10I, RESETN : in std_logic;
 
       RENABP : in std_logic;
-      RBYTEP, RCLEANP, RCVNGP, RDONEP, RSMATIP, RSTARTIP : out std_logic;
+      RBYTEP, RCLEANP, RCVNGP, RDONEP, RSMATIP, RSTARTP : out std_logic;
 
       RDATAI : in std_logic_vector (7 downto 0);
       RDATAO : out std_logic_vector (7 downto 0)
@@ -60,7 +60,7 @@ END COMPONENT;
     signal RCVNGP : std_logic := '0';
     signal RDONEP : std_logic := '0';
     signal RSMATIP : std_logic := '0';
-    signal RSTARTIP : std_logic := '0';
+    signal RSTARTP : std_logic := '0';
 
     constant Clock_period : time := 10 ns;
 begin
@@ -77,7 +77,7 @@ RDATAO => RDATAO,
 RCVNGP => RCVNGP,
 RDONEP => RDONEP,
 RSMATIP => RSMATIP,
-RSTARTIP => RSTARTIP
+RSTARTP => RSTARTP
 );
 -- Clock process definitions
 Clock_process :process
@@ -89,9 +89,11 @@ end process;
 stim_proc: process
 begin
 -- insert stimulus here
-RESETN <= '1', '0' after 1200ns, '1' after 1210ns; 
-RENABP <= '0', '1' after 100ns, '0' after 1600ns;
-RDATAI <= "00000000" , "10101011" after 100ns, X"ef" after 180ns, X"cd" after 670ns, "00000000" after 1140ns, "10101011" after 1400ns; 
+
+-- addr match, receiver functional
+RESETN <= '1';
+RENABP <= '0', '1' after 100ns, '0' after 1680ns;
+RDATAI <= "00000000" , "10101011" after 100ns, X"ef" after 180ns, X"cd" after 260ns, X"ab" after 340ns, X"ef" after 420ns, X"cd" after 500ns, X"ab" after 580ns, X"cd" after 670ns, "00000000" after 1140ns, "01010100" after 1600ns; 
 
 wait;
 end process;
