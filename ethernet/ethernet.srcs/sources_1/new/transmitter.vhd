@@ -84,13 +84,13 @@ begin
                             if (Abort_Required = '0') then 
                                 Abort_Required <= '1';
                             end if;
-                            
+                            COLLISION_HAPPENING <= '1';
+                            TRNSMTP <= '0';
                             if (CLK10I_8 = "000") then          -- à l'octet
-                                COLLISION_HAPPENING <= '1';
                                 TDATAO <= "10101010";
-                                TRNSMTP <= '0';
                                 if (Compteur_4 < "11") then
                                     Compteur_4 <= Compteur_4 + 1;
+                                    CLK10I_8 <= CLK10I_8 + 1;
                                 else
                                     Compteur_4 <= "00";
                                     COLLISION_HAPPENING <= '0';
@@ -102,8 +102,6 @@ begin
                                     Trans_Required <= '0';    
                                     Abort_Required <= '0';
                                 end if;
-                            
-                            CLK10I_8 <= CLK10I_8 + 1;
                                 
                             else
                                 if (CLK10I_8 = "111") then

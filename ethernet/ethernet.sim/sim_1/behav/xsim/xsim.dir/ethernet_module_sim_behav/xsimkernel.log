@@ -1,4 +1,4 @@
-Running: xsim.dir/ethernet_module_sim_behav/xsimk -simmode gui -wdb ethernet_module_sim_behav.wdb -simrunnum 0 -socket 43153
+Running: xsim.dir/ethernet_module_sim_behav/xsimk -simmode gui -wdb ethernet_module_sim_behav.wdb -simrunnum 0 -socket 57147
 Design successfully loaded
 Design Loading Memory Usage: 32704 KB (Peak: 32756 KB)
 Design Loading CPU Usage: 10 ms

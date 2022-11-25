@@ -47,31 +47,31 @@ begin
         begin
             if (rising_edge(CLK10I)) then
                 TSOCOLP <= '0';
-                TSMCOLP <= '0';
-                TSECOLP <= '0';
+                --TSMCOLP <= '0';
+                --TSECOLP <= '0';
                 if (RESETN = '0') then
-                    --Collision_Nmb <= (others => '0');
-                    --TSECOLP <= '0';
+                    Collision_Nmb <= (others => '0');
+                    TSECOLP <= '0';
                     TSOCOLP <= '0';
-                    --TSMCOLP <= '0';
+                    TSMCOLP <= '0';
                 elsif (TRNSMTP = '1' and RCVNGP = '1') then
-                    TSOCOLP <= '1';
+                    --TSOCOLP <= '1';
                     --if (COLLISION_HAPPENING = '0') then
-                    --   Collision_Nmb <= Collision_Nmb + 1;
+                      -- Collision_Nmb <= Collision_Nmb + 1;
                     --end if;
                     --if (Collision_Nmb >= "0010") then  -- Multiple failures
                       --   TSOCOLP <= '0';
                         -- TSMCOLP <= '1';
-                  --  elsif (Collision_Nmb = "1000") then -- Too many failures, cannot send
-                    --    TSECOLP <= '1';
-                      --  TSOCOLP <= '0';
-                        --TSMCOLP <= '0';
-                       -- Collision_Nmb <= (others => '0');
-                    --end if;
+                    --elsif (Collision_Nmb = "1000") then -- Too many failures, cannot send
+                     --   TSECOLP <= '1';
+                     --   TSOCOLP <= '0';
+                     --   TSMCOLP <= '0';
+                     --   Collision_Nmb <= (others => '0');
+                   -- end if;
                 end if;
-               -- if (TDONEP = '1') then
-                --    Collision_Nmb <= (others => '0');
-               -- end if;    
+                --if (TDONEP = '1') then
+                 --   Collision_Nmb <= (others => '0');
+                --end if;    
                 if (TABORTP = '1') then
                    TSOCOLP <= '1'; 
                    TSMCOLP <= '1';
