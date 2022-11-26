@@ -57,7 +57,7 @@ architecture Struct of ethernet_module is
         PORT( CLK10I, RESETN : in std_logic;
         
               TABORTP, TAVAILP, TFINISHP, TLASTP, TSOCOLP, TSMCOLP, TSECOLP : in std_logic;
-              TDONEP, TREADDP, TRNSMTP, TSTARTP, COLLISION_HAPPENING : out std_logic;
+              TDONEP, TREADDP, TRNSMTP, TSTARTP, TSUCCESS, TFAIL : out std_logic;
         
               TDATAI : in std_logic_vector (7 downto 0);
               TDATAO : out std_logic_vector (7 downto 0));
@@ -77,7 +77,7 @@ component ethernet_receiver
  component ethernet_collision is
          Port (CLK10I, RESETN : in std_logic;
          
-               TRNSMTP, RCVNGP, TABORTP, COLLISION_HAPPENING: in std_logic;
+               TRNSMTP, RCVNGP, TABORTP, TSUCCESS, TFAIL: in std_logic;
                TSOCOLP, TSMCOLP, TSECOLP : out std_logic);
      end component;    
 
@@ -89,7 +89,8 @@ signal TSOCOLP_inter : std_logic;
 signal TSMCOLP_inter : std_logic;
 signal TSECOLP_inter : std_logic;
 
-signal COLLISION_HAPPENING_inter : std_logic;
+signal TSUCCESS_inter : std_logic;
+signal TFAIL_inter : std_logic;
 
 signal Test_sortie : std_logic_vector (7 downto 0);
 
@@ -110,7 +111,8 @@ begin
                                         TSOCOLP => TSOCOLP_inter,
                                         TSMCOLP => TSMCOLP_inter, 
                                         TSECOLP => TSECOLP_inter,
-                                        COLLISION_HAPPENING => COLLISION_HAPPENING_inter);
+                                        TSUCCESS => TSUCCESS_inter,
+                                        TFAIL => TFAIL_inter);
     
     U2 : ethernet_receiver port map (CLK10I => CLK10I,
                                      RESETN => RESETN,
@@ -132,7 +134,8 @@ begin
                                       TSOCOLP => TSOCOLP_inter,
                                       TSMCOLP => TSMCOLP_inter,
                                       TSECOLP => TSECOLP_inter,
-                                      COLLISION_HAPPENING => COLLISION_HAPPENING_inter);
+                                      TSUCCESS => TSUCCESS_inter,
+                                      TFAIL => TFAIL_inter);
 
     TRNSMTP <= TRNSMTP_inter;
     RCVNGP <= RCVNGP_inter;

@@ -34,7 +34,7 @@ entity ethernet_transmitter is
     Port (CLK10I, RESETN : in std_logic;
 
           TABORTP, TAVAILP, TFINISHP, TLASTP, TSOCOLP, TSMCOLP, TSECOLP : in std_logic;
-          TDONEP, TREADDP, TRNSMTP, TSTARTP, COLLISION_HAPPENING : out std_logic;
+          TDONEP, TREADDP, TRNSMTP, TSTARTP, TSUCCESS, TFAIL : out std_logic;
 
           TDATAI : in std_logic_vector (7 downto 0);
           TDATAO : out std_logic_vector (7 downto 0));
@@ -48,6 +48,8 @@ architecture Behavioral of ethernet_transmitter is
 
     signal Trans_Required : std_logic := '0';
     signal Abort_Required : std_logic := '0';
+    signal TSECOLP_Detected: std_logic := '0';
+    signal Stop_All_Attempts: std_logic := '0';
     signal SFD_Done : std_logic := '0';
     signal Dest_Done : std_logic := '0';
     signal Source_Done : std_logic := '0';
@@ -59,6 +61,8 @@ begin
                 TREADDP <= '0';
                 TDONEP <= '0';
                 TSTARTP <= '0';
+                TSUCCESS <= '0';
+                TFAIL <= '0';
                 
                 if (RESETN = '0') then              -- Réinitialisation totale
                     CLK10I_8 <= (others => '0');
@@ -74,17 +78,22 @@ begin
                     Dest_Done <= '0';
                     Source_Done <= '0';
                     Trans_Done <= '0';
+                    Stop_All_Attempts <= '0';
+                    TSECOLP_Detected <= '0';
+                    
+                elsif (TSECOLP = '1') then
+                    TSECOLP_Detected <= '1';
                 else 
-                    if (Trans_Required = '1' or TAVAILP = '1') then 
+                    if ((Trans_Required = '1' or TAVAILP = '1') and Stop_All_Attempts = '0') then 
                         if (Trans_Required = '0') then 
                             Trans_Required <= '1';
                         end if; 
                         
                         if (Abort_Required = '1' or TABORTP = '1' or TSOCOLP = '1') then
                             if (Abort_Required = '0') then 
+                                TFAIL <= '1';
                                 Abort_Required <= '1';
                             end if;
-                            COLLISION_HAPPENING <= '1';
                             TRNSMTP <= '0';
                             if (CLK10I_8 = "000") then          -- à l'octet
                                 TDATAO <= "10101010";
@@ -92,8 +101,10 @@ begin
                                     Compteur_4 <= Compteur_4 + 1;
                                     CLK10I_8 <= CLK10I_8 + 1;
                                 else
+                                    if (TSECOLP_Detected = '1') then
+                                        Stop_All_Attempts <= '1';
+                                    end if;
                                     Compteur_4 <= "00";
-                                    COLLISION_HAPPENING <= '0';
                                     TDONEP <= '1';
                                     SFD_Done <= '0';                              
                                     Dest_Done <= '0';                              
@@ -158,6 +169,7 @@ begin
                                         else
                                             TDATAO <= EFD;
                                             Trans_Done <= '1';
+                                            TSUCCESS <= '1';
                                         end if;
                                     end if;     
                                     CLK10I_8 <= CLK10I_8 + 1;
