@@ -6,8 +6,46 @@ This was made using Xilinx Vivado and written in VHDL.
 
 Programmed by Maïlis Dy and Emily Holmes as part of a VHDL course.
 
+### Project Completion
+The project contains : 
+- The Transmitter module (behavioral architecture)
+- The Receiving module (behavioral architecture)
+- The Collision module (behavioral architecture)
+- The "Ethernet" module, containing all three components (structural architecture)
+
+On top of that, regarding the collisions :
+- We can detect single collision, multiple collisions, and transmission is aborted (until a RESETN signal) after 15 collisions (As per TSECOLP signal specification).
+- After each collision, the transmission module will send 32 bits of padding (1-0 alternating). 
+
 ### System Characteristics 
-The system was built to function with a period of 10ns, but can work with as low as 2.155ns. Thus, a frequency of 460MHz.
+The system was built to function with a period of 10ns, but can work with as low as **2.155ns**. Thus, a frequency of 460MHz.
+![minperiod](https://user-images.githubusercontent.com/81361917/205255471-4c627e3b-882f-4527-a42e-9171c2066384.png)
+
+The implementation contains a total of 75 flip-flops and 108 LUT.
+<br/>
+![slicelogic](https://user-images.githubusercontent.com/81361917/205257219-f9898470-21a9-48c7-97de-8fa48afa3497.png)
+
+### Tests
+The following tests are included in the VHDL simulation file. They are briefly described here and a screenshot is included.
+
+**Receiving - Address match**
+![receiver_addr_match](https://user-images.githubusercontent.com/81361917/205262646-6af4bbe7-26c6-42f1-b0c8-936d53057675.png)
+
+**Receiving - No Address match**
+![receiving-nomatch](https://user-images.githubusercontent.com/81361917/205262895-1d0e0696-7270-4581-bd81-85b1b5888aa4.png)
+
+**Transmitting - Successful**
+![transmissing_successful](https://user-images.githubusercontent.com/81361917/205262938-8cebbc47-f4c6-453b-8a4c-41ef81434c46.png)
+
+**Transmitting - Abort**
+![transmitting - abort](https://user-images.githubusercontent.com/81361917/205262971-4f2cb13b-66ec-489f-91b7-d5cfd19f59c1.png)
+
+**Transmitting - Reset**
+![transmitting-reset](https://user-images.githubusercontent.com/81361917/205262983-008773d6-68da-438d-8730-3ef8c69f9660.png)
+
+**Collision Test**
+![collision](https://user-images.githubusercontent.com/81361917/205262989-a9d1d066-128b-44fc-b50e-5c9cf4a59259.png)
+
 
 ## Module description
 The Ethernet module is built around the Ethernet Core 10 manual. Our implementation is centered around three components :
