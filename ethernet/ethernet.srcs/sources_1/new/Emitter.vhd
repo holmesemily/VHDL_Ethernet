@@ -24,14 +24,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use ieee.numeric_std.all;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 
 entity ethernet_receiver is
 Generic (
@@ -97,7 +89,7 @@ begin
                             if (RDATAI = NOADDRI(to_integer(shift_left(unsigned(Index), 3)) + 7 downto to_integer(shift_left(unsigned(Index), 3)))) then
                                 RBYTEP <= '1';
                                 Index <= Index + 1;
-                            else -- Mauvaise addr
+                            else -- No address match
                                 RCLEANP <= '1';
                                 RCVNGP <= '0';
                                 SFD_Received <= '0';
@@ -124,7 +116,7 @@ begin
                                 end if;
                             end if;
                         
-                        else -- receive data except if EFD
+                        else -- Receive data until EFD
                             RBYTEP <= '1'; 
                             if (RDATAI = EFD) then
                                 RDONEP <= '1';
@@ -147,7 +139,7 @@ begin
                     end if;
                 else
                     if (Last_Data_Received /= EFD and SFD_Received = '1') then
-                        -- Last frame incomplete
+                        -- If last frame was incomplete
                         RCLEANP <= '1';
                         RSMATIP <= '0';
                         RCVNGP <= '0';

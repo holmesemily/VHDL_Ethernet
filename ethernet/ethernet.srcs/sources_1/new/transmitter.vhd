@@ -64,7 +64,7 @@ begin
                 TSUCCESS <= '0';
                 TFAIL <= '0';
                 
-                if (RESETN = '0') then              -- Réinitialisation totale
+                if (RESETN = '0') then              
                     CLK10I_8 <= (others => '0');
                     Compteur_6 <= (others => '0');
                     Compteur_4 <= (others => '0');
@@ -84,6 +84,9 @@ begin
                 elsif (TSECOLP = '1') then
                     TSECOLP_Detected <= '1';
                 else 
+                    -- As TAVAILP can be shorter than frame duration, we store that information in Trans_Required
+                    -- After TSECOLP (= too many collisions), we perform the bit padding one last time. By that point TSECOLP is asserted low
+                    -- again, thus we use the Stop_All_Attempts signal to block transmission before a RESET.
                     if ((Trans_Required = '1' or TAVAILP = '1') and Stop_All_Attempts = '0') then 
                         if (Trans_Required = '0') then 
                             Trans_Required <= '1';
@@ -95,7 +98,7 @@ begin
                                 Abort_Required <= '1';
                             end if;
                             TRNSMTP <= '0';
-                            if (CLK10I_8 = "000") then          -- à l'octet
+                            if (CLK10I_8 = "000") then          -- Sync to byte
                                 TDATAO <= "10101010";
                                 if (Compteur_4 < "11") then
                                     Compteur_4 <= Compteur_4 + 1;
@@ -162,7 +165,7 @@ begin
                                             Index <= Index + 1;
                                         end if;
                                                                     
-                                    else -- Envoi de DATA jusqu'a TFINISHP
+                                    else -- Send DATA until TFINISHP
                                         if (TFINISHP = '0') then 
                                             TDATAO <= TDATAI;
                                             TREADDP <= '1';

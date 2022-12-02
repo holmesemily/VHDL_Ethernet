@@ -24,15 +24,6 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 use ieee.numeric_std.all;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity ethernet_collision is
     Port (CLK10I, RESETN : in std_logic;
     
@@ -60,15 +51,14 @@ begin
                      Collision_Nmb <= Collision_Nmb + 1;
                      if (Collision_Nmb >= "00001") then  -- Multiple failures
                         TSMCOLP <= '1';
-                        if (Collision_Nmb = "00010") then -- Too many failures, cannot send
+                        if (Collision_Nmb = "01111") then -- Too many failures, cannot send
                             TSECOLP <= '1';
                             Collision_Nmb <= (others => '0');
                        end if;
                     end if;
                 end if;
-                   
                 
-                if (TSUCCESS = '1') then
+                if (TSUCCESS = '1') then -- Reset collision number
                     Collision_Nmb <= (others => '0');
                 end if;    
                 if (TABORTP = '1') then

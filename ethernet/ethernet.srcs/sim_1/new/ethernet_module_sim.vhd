@@ -22,17 +22,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity ethernet_module_sim is
---  Port ( );
 end ethernet_module_sim;
 
 architecture Behavioral of ethernet_module_sim is
@@ -119,31 +109,66 @@ RDONEP => RDONEP,
 RSMATIP => RSMATIP,
 RSTARTP => RSTARTP
 );
+
 -- Clock process definitions
 Clock_process :process
 begin
 CLK10I <= not(CLK10I);
 wait for Clock_period/2;
 end process;
--- Stimulus process
+
 stim_proc: process
 begin
--- insert stimulus here
 
--- addr match, receiver functional
-RESETN <= '1'; --, '0' after 500ns, '1' after 600ns;
+
+
+-- Please comment or uncomment the tests to try them 
+
+-- RECEIVING - ADDR MATCH
+RESETN <= '1';
 RENABP <= '0', '1' after 100ns, '0' after 1680ns;
 RDATAI <= "00000000" , "10101011" after 100ns, X"ef" after 180ns, X"cd" after 260ns, X"ab" after 340ns, X"ef" after 420ns, X"cd" after 500ns, X"ab" after 580ns, X"cd" after 670ns, "00000000" after 1140ns, "01010100" after 1600ns; 
+-- END RECEIVING - ADDR MATCH
 
--- transmitter functional 
---RESETN <= '1', '0' after 1000 ns, '1' after 1200 ns;
+
+-- RECEIVING - NO ADDR MATCH
+--RESETN <= '1';
+--RENABP <= '0', '1' after 100ns, '0' after 1680ns;
+--RDATAI <= "00000000" , "10101011" after 100ns, X"ef" after 180ns, X"cd" after 260ns, X"bb" after 340ns; 
+-- END RECEIVING - NO ADDR MATCH
+
+
+-- TRANSMITTING - NO ISSUE
+--RESETN <= '1';
 --TDATAI <= "00000000", X"ef" after 100 ns, X"cd" after 180 ns, X"ab" after 260 ns, X"ef" after 340 ns, X"cd" after 420 ns, X"ab" after 500 ns; -- "00000100" after 1090 ns; 
 --TAVAILP <= '0', '1' after 50 ns, '0' after 100 ns;
---TFINISHP <= '0', '0' after 1300 ns, '0' after 1400ns;
+--TFINISHP <= '0', '1' after 1300 ns, '0' after 1400ns;
+-- END TRANSMITTING - NO ISSUE
 
--- singular collision
-TAVAILP <= '0', '1' after 100 ns;
-TDATAI <= X"ab";
+
+-- TRANSMITTING - ABORT
+--RESETN <= '1';
+--TDATAI <= "00000000", X"ef" after 100 ns, X"cd" after 180 ns, X"ab" after 260 ns, X"ef" after 340 ns, X"cd" after 420 ns, X"ab" after 500 ns; -- "00000100" after 1090 ns; 
+--TAVAILP <= '0', '1' after 50 ns, '0' after 100 ns;
+--TABORTP <= '0', '1' after 1300ns, '0' after 1400ns;
+-- END TRANSMITTING - ABORT
+
+
+-- TRANSMITTING - RESET
+--RESETN <= '1', '0' after 1300ns, '1' after 1400ns;
+--TDATAI <= "00000000", X"ef" after 100 ns, X"cd" after 180 ns, X"ab" after 260 ns, X"ef" after 340 ns, X"cd" after 420 ns, X"ab" after 500 ns; -- "00000100" after 1090 ns; 
+--TAVAILP <= '0', '1' after 50 ns, '0' after 100 ns;
+-- END TRANSMITTING - RESET
+
+
+-- COLLISION TEST
+-- Description: Receiving + Transmitting at the same time. Transmission will send bit padding after each collision
+--RESETN <= '1';
+--RENABP <= '0', '1' after 100ns, '0' after 1680ns;
+--RDATAI <= "00000000" , "10101011" after 100ns, X"ef" after 180ns, X"cd" after 260ns, X"ab" after 340ns, X"ef" after 420ns, X"cd" after 500ns, X"ab" after 580ns, X"cd" after 670ns, "00000000" after 1140ns, "01010100" after 1600ns; 
+--TAVAILP <= '0', '1' after 100 ns;
+--TDATAI <= X"ab";
+-- END COLLISION TEST
 
 wait;
 end process;    
