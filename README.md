@@ -1,74 +1,68 @@
 # VHDL_Ethernet
 
+## Project Description
+A modelisation of an Ethernet module in FPGA.
+This was made using Xilinx Vivado and written in VHDL. 
 
-On a construit notre module Ethernet autour de 3 composants différents:
+Programmed by Maïlis Dy and Emily Holmes as part of a VHDL course.
 
-Signaux communs à tous les modules : 
-      RESETN -> Force la réinitialisation du module ethernet
-      CLK10I -> Clock
+### System Characteristics 
+The system was built to function with a period of 10ns, but can work with as low as 2.155ns. Thus, a frequency of 460MHz.
 
- -- Transmitter --
-Signals:
+## Module description
+The Ethernet module is built around the Ethernet Core 10 manual. Our implementation is centered around three components :
 
-Input 
-      TABORTP -> Qui demande l'arrêt de la transmission
-      TAVAILP -> Les données sont prêtes à êtres envoyées
-      TFINISHP -> La transmission doit être terminée
-      TDATAI -> Informations à transmettre
-      TLASTP -> Dernier Bit de data vient d'être envoyé
-      TSOCOLP, TSMCOLP, TSECOLP -> Information sur l'état des collisions
+### Signals shared between all modules : 
+- RESETN -> Reinitialize all three components to their initial state
+- CLK10I -> Clock
+
+### **Transmitter** 
+
+**Input** 
+- TABORTP -> Requires transmission termination
+- TAVAILP -> Data is ready to be treated
+- TFINISHP -> Transmission is done, no more data to transmit
+- TDATAI[0:7] -> Data to be transmitted
+- TLASTP -> Last data has been sent - this signal is unused in our project, as we communicate this information with TFINISHP.
+- TSOCOLP, TSMCOLP, TSECOLP -> Collision state information (in order: 1 collision, multiple collisions, too many collisions and stop transmission until reset).
       
-Output 
-      TDATAO -> Informations envoyées
-      TDONEP -> Transmission terminée
-      TREADDP -> Octet disponible vient d'être lu
-      TRNSMTP -> Transmission en cours
-      TSTARTP -> Commencement de la transmission
-      TSUCCESS, TFAIL -> Informe du succès ou de l'échec de la transmission du message
+**Output**
+- TDATAO[0:7] -> Information sent
+- TDONEP -> Transmission is done (regardless of success/failure)
+- TREADDP -> Available byte has been read
+- TRNSMTP -> Transmitting 
+- TSTARTP -> Transmission begins (impulse when SFD received)
+- TSUCCESS, TFAIL -> Lets Collision component know whether transmission failed or succeeded
       
-Fonction du Transmitter:
-Transmet un message, sauf si RESET (réinitialisation) ou TABORTP, TSOCOLP, TSMCOLP auquel cas on abandonne puis on réessaie
-Si TSECOLP on abandonne totalement la tentative de transmission
-      
- -- Receiver --
-Signals:
+### **Receiver** 
  
-Input 
-      RENABP -> Module en état de recevoir
-      RDATAI -> vecteur contenant les informations reçues
+**Input**
+- RENABP -> Data to receive
+- RDATAI[0:7] -> Data received
       
-Output
-      RBYTEP -> 
-      RCLEANP -> Cas d'erreur
-      RCVNGP -> Réception en cours
-      RDONEP -> Bit bien reçu
-      RSMATIP -> Adresse correcte
-      RSTARTP -> Informe que le message est reçu
-      RDATAO -> vecteur contenant les informations envoyées à la couche supérieure
+**Output**
+- RBYTEP -> Sent after every byte received
+- RCLEANP -> Sent after error
+- RCVNGP -> Receiving data
+- RDONEP -> Sent after successful reception (EFD)
+- RSMATIP -> Address match
+- RSTARTP -> SFD received
+- RDATAO[0:7] -> Data sent to upper layer
       
-Fonction du Receiver:
-Réception d'un message sur RDATAI qu'on transmet via RDATAO à la couche supérieure
  
- -- Collision --
-Signals:
+### **Collision**
  
-Input
-      TRNSMTP -> Le transmitter est en cours de transmission
-      RCVNGP -> Le receiver est en cours de réception
-      TABORTP -> La transmission est actuellement en arrêt
-      TSUCCESS -> La transmission a été correctement effectuée
-      TFAIL -> La transmission a été échouée
+**Input**
+- TRNSMTP -> Transmitting
+- RCVNGP -> Receiving
+- TABORTP -> Transmission is aborting (according to specs, TSOCOLP and TSMCOLP must be asserted high during any and all signal abortion)
+- TSUCCESS -> Transmission was successful (to reset failed transmission attempts)
+- TFAIL -> Transmission failed (to count failed transmission attemps)
       
-Output
-      TSOCOLP -> Une collision détéctée
-      TSMCOLP -> Multiples collisions détéctées
-      TSECOLP -> Trop de collisions, annulation de l'envoi
-      
-Fonction de Collision:
-Vérifie si une transmission a lieu en même temps qu'une réception, dans ce cas il envoie au composant Transmitter l'information de retransmettre ou pas
-selon le nombre de tentatives déjà ratées. Si TSUCCESS on réinitialise le nombre de collisions.
- 
- 
--- Rajouter plus d'infos signaux intermédiaires? Signaux d'entrée sortie du module complet? Enlever des infos?
+**Output**
+- TSOCOLP -> Single collision detected
+- TSMCOLP -> Multiple collision detected
+- TSECOLP -> Too many collision detected (15+) : transmitter will not try transmitting again
+fos?
  
  
